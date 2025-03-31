@@ -1,0 +1,96 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.ipynb_checkpoints/
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.pydevproject
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Data files - prevent large data files from being committed
+*.csv
+*.parquet
+*.pkl
+*.pt
+*.gz
+*.zip
+*.tar
+*.tar.gz
+data/unsw/UNSW-NB15_*.csv
+data/unsw/processed/
+data/unsw/results/
+
+# Allow sample or test data to be committed if small
+!data/samples/*.csv
+!notebooks/data/*.gpickle
+!notebooks/data/*.graphml
+
+# Visualization outputs
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.svg
+data/unsw/*.png
+notebooks/figures/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*:Zone.Identifier
+
+# Logs
+logs/
+*.log
+
+# Temporary directories
+tmp/
+temp/

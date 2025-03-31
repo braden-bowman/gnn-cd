@@ -1,0 +1,50 @@
+id,name,type,description
+1,srcip,nominal,Source IP address
+2,sport,integer,Source port number
+3,dstip,nominal,Destination IP address
+4,dsport,integer,Destination port number
+5,proto,nominal,Protocol type
+6,state,nominal,Connection state
+7,dur,Float,Record total duration
+8,sbytes,Integer,Source to destination bytes
+9,dbytes,Integer,Destination to source bytes
+10,sttl,Integer,Source to destination time to live
+11,dttl,Integer,Destination to source time to live
+12,sloss,Integer,Source packets retransmitted or dropped
+13,dloss,Integer,Destination packets retransmitted or dropped
+14,service,nominal,Service type
+15,Sload,Float,Source bits per second
+16,Dload,Float,Destination bits per second
+17,Spkts,integer,Source to destination packet count
+18,Dpkts,integer,Destination to source packet count
+19,swin,integer,Source TCP window advertisement
+20,dwin,integer,Destination TCP window advertisement
+21,stcpb,integer,Source TCP sequence number
+22,dtcpb,integer,Destination TCP sequence number
+23,smeansz,integer,Mean of the packet size transmitted by the source
+24,dmeansz,integer,Mean of the packet size transmitted by the destination
+25,trans_depth,integer,Represents the pipelined depth
+26,res_bdy_len,integer,Actual uncompressed content size of the data transferred
+27,Sjit,Float,Source jitter
+28,Djit,Float,Destination jitter
+29,Stime,Timestamp,Record start time
+30,Ltime,Timestamp,Record last time
+31,Sintpkt,Float,Source interpacket arrival time
+32,Dintpkt,Float,Destination interpacket arrival time
+33,tcprtt,Float,TCP connection setup round-trip time
+34,synack,Float,TCP connection setup time
+35,ackdat,Float,TCP connection setup time
+36,is_sm_ips_ports,Binary,Connection has same src/dst IP and ports
+37,ct_state_ttl,Integer,No. of connections with same state and ttl
+38,ct_flw_http_mthd,Integer,No. of flows with same http method
+39,is_ftp_login,Binary,FTP session with login attempt
+40,ct_ftp_cmd,Integer,No. of flows with same FTP command
+41,ct_srv_src,Integer,No. of connections with same service and source
+42,ct_srv_dst,Integer,No. of connections with same service and destination
+43,ct_dst_ltm,Integer,No. of connections with same destination and last time
+44,ct_src_ltm,Integer,No. of connections with same source and last time
+45,ct_src_dport_ltm,Integer,No. of connections with same source and destination port in last time
+46,ct_dst_sport_ltm,Integer,No of connections with same destination and source port in last time
+47,ct_dst_src_ltm,Integer,No of connections with same destination and source in last time
+48,attack_cat,nominal,Attack category
+49,Label,binary,Class label

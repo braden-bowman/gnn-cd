@@ -1,0 +1,39 @@
+# Core requirements
+networkx>=2.8.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+scikit-learn>=1.0.0
+numpy>=1.20.0
+pandas>=1.3.0
+rustworkx>=0.13.0  # Faster graph operations
+polars>=0.19.3     # Fast DataFrame operations (replacement for pandas)
+pyarrow>=14.0.1    # For Parquet support with Polars
+
+# For traditional community detection methods
+python-louvain>=0.16  # For Louvain algorithm
+cdlib>=0.2.0  # For additional algorithms and metrics
+
+# For Graph Neural Networks 
+torch>=1.10.0
+torch-geometric>=2.0.0
+torch-sparse>=0.6.16   # For sparse tensor operations
+torch-scatter>=2.1.0   # For scatter operations in GNNs
+
+# For visualizations
+plotly>=5.5.0  # For interactive visualizations
+pygraphviz>=1.10  # For better graph layouts (optional)
+
+# For Jupyter notebooks
+jupyter>=1.0.0
+ipywidgets>=7.6.0
+nbconvert>=6.0.0
+tqdm>=4.66.1  # For progress bars
+
+# For cybersecurity analysis
+karateclub>=1.0.0  # For BigCLAM implementation
+
+# For memory optimization
+psutil>=5.9.5  # For memory monitoring
+
+# For testing
+pytest>=6.0.0

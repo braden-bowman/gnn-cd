@@ -1,0 +1,20 @@
+community-detection-framework/
+├── README.md
+├── requirements.txt
+├── setup.py
+├── community_detection/
+│   ├── __init__.py
+│   ├── data_prep.py
+│   ├── traditional_methods.py
+│   ├── gnn_community_detection.py
+│   ├── dynamic_gnn.py
+│   ├── overlapping_community_detection.py
+│   ├── evaluation.py
+│   └── visualization.py
+└── notebooks/
+    ├── 1_Data_Preparation.ipynb
+    ├── 2_Traditional_Methods.ipynb
+    ├── 3_GNN_Based_Methods.ipynb
+    ├── 4_Dynamic_GNN_Methods.ipynb
+    ├── 5_Overlapping_Communities.ipynb
+    └── 6_Comprehensive_Evaluation.ipynb
