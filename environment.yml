@@ -1,0 +1,34 @@
+name: gnn-cd
+channels:
+  - pytorch
+  - pyg
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip>=22.0.4
+  - pytorch>=1.10.0
+  - cudatoolkit=11.3  # For GPU support
+  - pyg>=2.0.0  # PyTorch Geometric
+  - networkx>=2.8.0
+  - matplotlib>=3.5.0
+  - seaborn>=0.11.0
+  - scikit-learn>=1.0.0
+  - numpy>=1.20.0
+  - pandas>=1.3.0
+  - polars>=0.19.3  # Fast DataFrame operations
+  - pyarrow>=14.0.1
+  - ipython
+  - jupyter
+  - ipywidgets
+  - tqdm
+  - pip:
+    - rustworkx>=0.13.0
+    - python-louvain>=0.16
+    - cdlib>=0.2.0
+    - karateclub>=1.0.0
+    - torch-sparse>=0.6.16
+    - torch-scatter>=2.1.0
+    - plotly>=5.5.0
+    - psutil>=5.9.5
+    - pytest>=6.0.0
