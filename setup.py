@@ -11,11 +11,16 @@ setup(
         "scikit-learn>=1.0.0",
         "numpy>=1.20.0",
         "pandas>=1.3.0",
+        "rustworkx>=0.13.0", 
+        "polars>=0.19.3",
+        "pyarrow>=14.0.1",
     ],
     extras_require={
         "gnn": [
             "torch>=1.10.0",
             "torch-geometric>=2.0.0",
+            "torch-sparse>=0.6.16",
+            "torch-scatter>=2.1.0",
         ],
         "traditional": [
             "python-louvain>=0.16",
@@ -24,12 +29,26 @@ setup(
         "visualization": [
             "plotly>=5.5.0",
         ],
+        "gui": [
+            "nicegui>=1.3.0",
+        ],
         "all": [
             "torch>=1.10.0",
             "torch-geometric>=2.0.0",
+            "torch-sparse>=0.6.16",
+            "torch-scatter>=2.1.0",
             "python-louvain>=0.16",
             "cdlib>=0.2.0",
             "plotly>=5.5.0",
+            "rustworkx>=0.13.0",
+            "polars>=0.19.3",
+            "pyarrow>=14.0.1",
+            "nicegui>=1.3.0",
+        ],
+    },
+    entry_points={
+        'console_scripts': [
+            'gnn-cd-gui=community_detection.gui:run_gui',
         ],
     },
     author="Your Name",

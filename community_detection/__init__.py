@@ -56,3 +56,6 @@ from .visualization import (
     visualize_embeddings, visualize_metrics_over_time, visualize_overlapping_communities,
     vehlow_visualization
 )
+
+# Import GUI module
+from .gui import run_gui, initialize_app
