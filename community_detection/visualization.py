@@ -330,11 +330,14 @@ def visualize_communities(G: rx.PyGraph, communities: Union[Dict[int, int], List
         alpha=0.8
     )
     
-    # Add a colorbar
+    # Add a colorbar - need to create a figure and axis explicitly
+    fig = plt.gcf()  # Get current figure
+    ax = plt.gca()   # Get current axis
+    
     sm = plt.cm.ScalarMappable(cmap=plt.cm.rainbow, norm=plt.Normalize(
         vmin=min(community_ids), vmax=max(community_ids)))
     sm.set_array([])
-    cbar = plt.colorbar(sm)
+    cbar = fig.colorbar(sm, ax=ax)  # Pass the axis to avoid the error
     cbar.set_label('Community')
     
     plt.title(title)
@@ -744,11 +747,11 @@ def visualize_communities_3d(G: rx.PyGraph, communities: Union[Dict[int, int], L
         z = [pos_3d[u][2], pos_3d[v][2]]
         ax.plot(x, y, z, 'gray', alpha=0.5)
     
-    # Add a colorbar
+    # Add a colorbar - pass both figure and axis to avoid error
     sm = plt.cm.ScalarMappable(cmap=plt.cm.rainbow, norm=plt.Normalize(
         vmin=min(node_colors), vmax=max(node_colors)))
     sm.set_array([])
-    cbar = plt.colorbar(sm)
+    cbar = fig.colorbar(sm, ax=ax)  # Pass both fig and ax to avoid error
     cbar.set_label('Community')
     
     ax.set_title(title)
@@ -920,9 +923,9 @@ def visualize_embeddings(embeddings: torch.Tensor, communities: torch.Tensor,
     
     embeddings_2d = reducer.fit_transform(embeddings_np)
     
-    # Create plot
-    plt.figure(figsize=figsize)
-    scatter = plt.scatter(
+    # Create plot with explicit figure and axis
+    fig, ax = plt.subplots(figsize=figsize)
+    scatter = ax.scatter(
         embeddings_2d[:, 0], embeddings_2d[:, 1],
         c=communities_np,
         cmap=plt.cm.rainbow,
@@ -930,11 +933,11 @@ def visualize_embeddings(embeddings: torch.Tensor, communities: torch.Tensor,
         alpha=0.8
     )
     
-    # Add a colorbar
-    cbar = plt.colorbar(scatter)
+    # Add a colorbar with explicit axis reference
+    cbar = fig.colorbar(scatter, ax=ax)
     cbar.set_label('Community')
     
-    plt.title(title)
+    ax.set_title(title)
     plt.tight_layout()
     plt.show()
 

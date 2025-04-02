@@ -790,4 +790,78 @@ def compare_gnn_models(G: rx.PyGraph, embedding_dim: int = 16, n_clusters: Optio
     plt.show()
     
     return results_df
+
+
+# Wrapper functions for specific GNN models
+
+def run_gcn(G: rx.PyGraph, **kwargs) -> Dict[str, Any]:
+    """
+    Run GCN-based community detection
+    
+    Parameters:
+    -----------
+    G: RustWorkX PyGraph
+        Graph to analyze
+    **kwargs: Additional parameters to pass to run_gnn_community_detection
+    
+    Returns:
+    --------
+    results: dict
+        Results of community detection
+    """
+    return run_gnn_community_detection(G, model_type='gcn', **kwargs)
+
+
+def run_graphsage(G: rx.PyGraph, **kwargs) -> Dict[str, Any]:
+    """
+    Run GraphSAGE-based community detection
+    
+    Parameters:
+    -----------
+    G: RustWorkX PyGraph
+        Graph to analyze
+    **kwargs: Additional parameters to pass to run_gnn_community_detection
+    
+    Returns:
+    --------
+    results: dict
+        Results of community detection
+    """
+    return run_gnn_community_detection(G, model_type='graphsage', **kwargs)
+
+
+def run_gat(G: rx.PyGraph, **kwargs) -> Dict[str, Any]:
+    """
+    Run GAT-based community detection
+    
+    Parameters:
+    -----------
+    G: RustWorkX PyGraph
+        Graph to analyze
+    **kwargs: Additional parameters to pass to run_gnn_community_detection
+    
+    Returns:
+    --------
+    results: dict
+        Results of community detection
+    """
+    return run_gnn_community_detection(G, model_type='gat', **kwargs)
+
+
+def run_vgae(G: rx.PyGraph, **kwargs) -> Dict[str, Any]:
+    """
+    Run VGAE-based community detection
+    
+    Parameters:
+    -----------
+    G: RustWorkX PyGraph
+        Graph to analyze
+    **kwargs: Additional parameters to pass to run_gnn_community_detection
+    
+    Returns:
+    --------
+    results: dict
+        Results of community detection
+    """
+    return run_gnn_community_detection(G, model_type='vgae', **kwargs)
                 
