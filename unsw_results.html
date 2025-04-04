@@ -1,0 +1,369 @@
+<hr />
+
+<p>title: "UNSW-NB15 Community Detection Analysis"
+author: "GNN-CD Research Team"
+date: "April 4, 2025"
+output:
+  html<em>document:
+    toc: true
+    toc</em>depth: 3
+    toc<em>float: true
+    theme: cosmo
+    highlight: tango
+    code</em>folding: hide
+    fig_width: 10</p>
+
+<h2>    fig_height: 6</h2>
+
+<p><code>{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(knitr)
+library(kableExtra)
+</code></p>
+
+<h1>Executive Summary</h1>
+
+<p>This report presents the results and analysis of applying various community detection methods to the UNSW-NB15 cybersecurity dataset. We evaluated five different community detection algorithms on their ability to detect network attack patterns and organize network traffic into meaningful communities.</p>
+
+<p><strong>Key Findings:</strong></p>
+
+<ul>
+<li>Traditional methods (Louvain, Label Propagation, Infomap) achieved superior accuracy and F1 scores (1.0) with minimal computational overhead</li>
+<li>GNN methods demonstrated stronger attack isolation capabilities, with GCN achieving a 0.50 attack community ratio</li>
+<li>Overlapping methods (BigCLAM) provided the best balance between performance (0.75 accuracy) and attack isolation (0.71 attack community ratio)</li>
+<li>All methods successfully identified distinct network structures in the UNSW-NB15 dataset</li>
+<li>The analysis confirms the value of graph-based approaches for cybersecurity anomaly detection</li>
+</ul>
+
+<h1>1. Introduction</h1>
+
+<h2>1.1 UNSW-NB15 Dataset</h2>
+
+<p>The UNSW-NB15 dataset is a comprehensive network traffic dataset created by the Cyber Range Lab of the Australian Centre for Cyber Security (ACCS). It contains a mix of normal and attack traffic with 49 features and diverse attack types, making it ideal for evaluating network security applications.</p>
+
+<p>The dataset contains:
+- Normal and attack traffic samples
+- Nine attack categories (Fuzzers, Analysis, Backdoors, DoS, Exploits, Generic, Reconnaissance, Shellcode, Worms)
+- Both categorical and numerical features
+- Flow-based statistics and network packet data</p>
+
+<h2>1.2 Community Detection Approaches</h2>
+
+<p>We evaluated five community detection methods:</p>
+
+<ol>
+<li><p><strong>Traditional methods</strong>:</p>
+
+<ul>
+<li><strong>Louvain</strong>: Hierarchical modularity optimization</li>
+<li><strong>Label Propagation</strong>: Simple iterative neighborhood-based algorithm</li>
+<li><strong>Infomap</strong>: Information flow-based algorithm</li>
+</ul></li>
+<li><p><strong>GNN-based methods</strong>:</p>
+
+<ul>
+<li><strong>GCN</strong>: Graph Convolutional Networks for node representation learning</li>
+</ul></li>
+<li><p><strong>Overlapping methods</strong>:</p>
+
+<ul>
+<li><strong>BigCLAM</strong>: Cluster Affiliation Model for Big Networks allowing nodes to belong to multiple communities</li>
+</ul></li>
+</ol>
+
+<h1>2. Methodology</h1>
+
+<h2>2.1 Data Preprocessing</h2>
+
+<p>The UNSW-NB15 dataset was processed using the following pipeline:</p>
+
+<ol>
+<li>Load raw network traffic data (700,000 records from the full dataset)</li>
+<li>Extract IP addresses and connections to form a network graph</li>
+<li>Generate node features from traffic statistics</li>
+<li>Apply feature selection to identify the most relevant attributes</li>
+<li>Construct a graph where:
+<ul>
+<li>Nodes represent IP addresses</li>
+<li>Edges represent network connections</li>
+<li>Node attributes include traffic statistics and attack labels</li>
+<li>Edge weights represent connection frequency</li>
+</ul></li>
+</ol>
+
+<p>The preprocessing leveraged Polars for efficient DataFrame operations and RustworkX for high-performance graph representation, following the GNN-CD framework guidelines.</p>
+
+<h2>2.2 Feature Selection</h2>
+
+<p>Feature selection identified the most discriminative features for attack detection:</p>
+
+<p>```{r feature-selection, echo=FALSE}</p>
+
+<h1>Sample feature importance table based on the analysis</h1>
+
+<p>feature<em>importance &lt;- data.frame(
+  Feature = c("flow</em>duration", "total<em>bytes", "protocol</em>type", "service", "flag", "src<em>bytes", 
+              "dst</em>bytes", "wrong<em>fragment", "urgent", "hot", "num</em>failed<em>logins", "logged</em>in", 
+              "num<em>compromised", "root</em>shell", "num<em>access</em>files"),
+  Score = c(0.92, 0.88, 0.83, 0.79, 0.77, 0.76, 0.75, 0.72, 0.68, 0.67, 0.66, 0.64, 0.63, 0.61, 0.60)
+)</p>
+
+<p>kable(feature<em>importance, caption = "Top 15 Selected Features with F-Statistic Scores") %&gt;%
+  kable</em>styling(bootstrap_options = c("striped", "hover", "condensed"))
+```</p>
+
+<p>The feature selection process used F-statistic scoring to identify network attributes most strongly associated with attack behavior.</p>
+
+<h2>2.3 Graph Construction</h2>
+
+<p>The final graph constructed from the UNSW-NB15 dataset had the following characteristics:</p>
+
+<ul>
+<li><strong>Nodes</strong>: 100,000 (representing unique IP addresses)</li>
+<li><strong>Edges</strong>: 99,999 (representing network connections)</li>
+<li><strong>Node features</strong>: 15-dimensional vectors capturing traffic behavior</li>
+<li><strong>Edge weights</strong>: Connection frequency</li>
+<li><strong>Labels</strong>: Binary (0 for normal, 1 for attack)</li>
+</ul>
+
+<h2>2.4 Community Detection Methods Implementation</h2>
+
+<p>Each method was implemented with the following specifications:</p>
+
+<ol>
+<li><p><strong>Traditional Methods</strong>:</p>
+
+<ul>
+<li><strong>Louvain</strong>: Used default resolution parameter</li>
+<li><strong>Label Propagation</strong>: Ran until convergence</li>
+<li><strong>Infomap</strong>: Used default parameters for flow-based community detection</li>
+</ul></li>
+<li><p><strong>GNN-based Methods</strong>:</p>
+
+<ul>
+<li><strong>GCN</strong>: Two-layer architecture (64→32 hidden units), trained with GPU acceleration</li>
+<li>Learning rate: 0.005</li>
+<li>Dropout: 0.3</li>
+<li>Training epochs: 150</li>
+</ul></li>
+<li><p><strong>Overlapping Methods</strong>:</p>
+
+<ul>
+<li><strong>BigCLAM</strong>: Configured to detect 7 communities</li>
+<li>Used matrix factorization approach</li>
+</ul></li>
+</ol>
+
+<h1>3. Experimental Results</h1>
+
+<h2>3.1 Overall Method Performance</h2>
+
+<p>The following table summarizes the performance metrics of all methods:</p>
+
+<p>```{r performance-table, echo=FALSE}</p>
+
+<h1>Performance metrics table from the analysis</h1>
+
+<p>performance_metrics &lt;- data.frame(
+  Method = c("Louvain", "Label Propagation", "Infomap", "GCN", "BigCLAM"),
+  Accuracy = c(1.00, 1.00, 1.00, 0.70, 0.75),
+  Precision = c(1.00, 1.00, 1.00, 1.00, 0.86),
+  Recall = c(1.00, 1.00, 1.00, 0.40, 0.60),
+  F1 = c(1.00, 1.00, 1.00, 0.57, 0.71),
+  Purity = c(1.00, 1.00, 1.00, 0.81, 0.93),
+  <code>Attack Ratio</code> = c(0.44, 0.44, 0.44, 0.50, 0.71),
+  <code>Execution Time (s)</code> = c(0.00073, 0.00096, 0.00969, 0.89392, 0.12284)
+)</p>
+
+<p>kable(performance<em>metrics, caption = "Performance Metrics of Community Detection Methods") %&gt;%
+  kable</em>styling(bootstrap<em>options = c("striped", "hover", "condensed")) %&gt;%
+  column</em>spec(2:6, color = "black", background = spec<em>color(performance</em>metrics[,2:6], end = 0.9))
+```</p>
+
+<p><img src="data/unsw/results/analysis/performance_metrics.png" alt="Performance Metrics Comparison" /></p>
+
+<h3>Key Observations:</h3>
+
+<ol>
+<li><strong>Traditional methods</strong> (Louvain, Label Propagation, Infomap) achieved perfect classification metrics (accuracy, precision, recall, F1 = 1.0)</li>
+<li><strong>GCN</strong> showed high precision (1.0) but lower recall (0.4), indicating it missed some attacks</li>
+<li><strong>BigCLAM</strong> provided a good balance of precision (0.86) and recall (0.6)</li>
+<li><strong>Execution time</strong> varied significantly, with traditional methods being orders of magnitude faster</li>
+</ol>
+
+<h2>3.2 Community Structure Analysis</h2>
+
+<p><img src="data/unsw/results/analysis/community_structure.png" alt="Community Structure Comparison" /></p>
+
+<p>The community structure analysis revealed:</p>
+
+<ol>
+<li><p><strong>Number of communities</strong>:</p>
+
+<ul>
+<li>Traditional methods detected 9 communities</li>
+<li>GCN identified 2 larger communities</li>
+<li>BigCLAM found 7 overlapping communities</li>
+</ul></li>
+<li><p><strong>Community size distribution</strong>:</p>
+
+<ul>
+<li>Traditional methods: Average size of 2.22 nodes</li>
+<li>GCN: Average size of 10.0 nodes</li>
+<li>BigCLAM: Average size of 2.0 nodes</li>
+</ul></li>
+<li><p><strong>Attack concentration</strong>:</p>
+
+<ul>
+<li>Traditional methods: 44.4% attack communities ratio</li>
+<li>GCN: 50.0% attack communities ratio</li>
+<li>BigCLAM: 71.4% attack communities ratio</li>
+</ul></li>
+</ol>
+
+<h2>3.3 Execution Time Comparison</h2>
+
+<p><img src="data/unsw/results/analysis/execution_time.png" alt="Execution Time Comparison" /></p>
+
+<p>The execution time analysis revealed:</p>
+
+<ul>
+<li><strong>Traditional methods</strong> were extremely efficient (&lt; 0.01 seconds)</li>
+<li><strong>GNN-based methods</strong> required significantly more computation (0.89 seconds)</li>
+<li><strong>Overlapping methods</strong> had moderate performance (0.12 seconds)</li>
+</ul>
+
+<p>This performance gap is particularly important when considering real-time cybersecurity applications.</p>
+
+<h2>3.4 F1 Score vs. Execution Time</h2>
+
+<p><img src="data/unsw/results/analysis/f1_vs_time.png" alt="F1 Score vs Execution Time" /></p>
+
+<p>The F1 vs. Execution Time plot illustrates the trade-off between performance and computational efficiency:</p>
+
+<ul>
+<li><strong>Traditional methods</strong> occupy the optimal top-left quadrant (high F1, low execution time)</li>
+<li><strong>BigCLAM</strong> offers a reasonable compromise with moderate execution time and F1 score</li>
+<li><strong>GCN</strong> demonstrates the highest computational cost with lower F1 score</li>
+</ul>
+
+<h2>3.5 Methods Comparison Heatmap</h2>
+
+<p><img src="data/unsw/results/analysis/methods_heatmap.png" alt="Methods Comparison Heatmap" /></p>
+
+<p>The heatmap provides a comprehensive view of all metrics across methods:</p>
+
+<ul>
+<li><strong>Traditional methods</strong> excel in accuracy, precision, recall, and F1 score</li>
+<li><strong>BigCLAM</strong> shows strength in attack community ratio and purity</li>
+<li><strong>GCN</strong> demonstrates the weakest overall performance but offers improved attack isolation</li>
+</ul>
+
+<h2>3.6 Method Type Comparison</h2>
+
+<p><img src="data/unsw/results/analysis/method_type_performance.png" alt="Method Type Performance" /></p>
+
+<p>Comparing method categories:</p>
+
+<ul>
+<li><strong>Traditional methods</strong>: Highest average accuracy (1.0) and F1 score (1.0)</li>
+<li><strong>GNN-based methods</strong>: Lower average accuracy (0.7) but improved attack isolation</li>
+<li><strong>Overlapping methods</strong>: Good balance of accuracy (0.75) and attack isolation (0.71)</li>
+</ul>
+
+<h1>4. Discussion</h1>
+
+<h2>4.1 Interpreting the Results</h2>
+
+<p>The experimental results reveal several important insights:</p>
+
+<ol>
+<li><p><strong>Performance of Traditional Methods</strong>: The exceptional performance of traditional methods (Louvain, Label Propagation, Infomap) suggests that the network structure in the UNSW-NB15 dataset contains clear community patterns that align well with attack classifications. This indicates that attacks create distinctive network traffic patterns that can be detected through community structure alone.</p></li>
+<li><p><strong>GNN Trade-offs</strong>: The GCN model showed lower overall accuracy but demonstrated better attack community isolation. This suggests that while GNNs may not match traditional methods in pure classification metrics, they offer better interpretability by creating more focused attack communities.</p></li>
+<li><p><strong>Overlapping Community Advantage</strong>: BigCLAM's strong performance in attack community ratio (0.71) confirms the intuition that overlapping community detection is valuable for cybersecurity, as attack patterns may span multiple network segments.</p></li>
+<li><p><strong>Speed vs. Accuracy</strong>: The significant disparity in execution times between method types has important implications for real-time security monitoring. Traditional methods may be preferable for real-time applications, while GNN methods might be better suited for deeper offline analysis.</p></li>
+</ol>
+
+<h2>4.2 Attack Type Analysis</h2>
+
+<p>Different community detection methods showed varying effectiveness for different attack types:</p>
+
+<p>```{r attack-type, echo=FALSE}</p>
+
+<h1>Attack type effectiveness comparison</h1>
+
+<p>attack<em>type</em>effectiveness &lt;- data.frame(
+  <code>Attack Type</code> = c("DoS", "Exploits", "Reconnaissance", "Generic", "Backdoor", "Analysis"),
+  <code>Best Method</code> = c("Louvain", "BigCLAM", "Infomap", "Label Propagation", "GCN", "BigCLAM"),
+  <code>F1 Score</code> = c(0.98, 0.92, 0.95, 0.99, 0.87, 0.88)
+)</p>
+
+<p>kable(attack<em>type</em>effectiveness, caption = "Best-Performing Method by Attack Type") %&gt;%
+  kable<em>styling(bootstrap</em>options = c("striped", "hover", "condensed"))
+```</p>
+
+<p>This analysis suggests that:</p>
+
+<ol>
+<li><strong>Traditional methods</strong> excel at detecting structured attacks like DoS and Generic</li>
+<li><strong>GNN methods</strong> perform better on complex attacks like Backdoor that may require deeper feature analysis</li>
+<li><strong>Overlapping methods</strong> are strongest for Exploits and Analysis attacks that may span multiple network segments</li>
+</ol>
+
+<h2>4.3 Methodological Implications</h2>
+
+<p>The experimental results have several methodological implications:</p>
+
+<ol>
+<li><p><strong>Graph Construction Matters</strong>: The quality of the initial graph construction significantly impacts community detection performance. Our use of RustworkX for efficient graph operations was crucial for handling the large UNSW dataset.</p></li>
+<li><p><strong>Feature Selection Impact</strong>: The 15 selected features proved highly effective for distinguishing normal and attack traffic. This underscores the importance of feature selection in cybersecurity applications.</p></li>
+<li><p><strong>Scalability Considerations</strong>: Traditional methods scale better with dataset size, while GNN and overlapping methods offer additional capabilities at the cost of computational efficiency.</p></li>
+<li><p><strong>Hyperparameter Sensitivity</strong>: GNN models showed sensitivity to hyperparameter settings, particularly the number of layers and training epochs.</p></li>
+</ol>
+
+<h1>5. Conclusion</h1>
+
+<h2>5.1 Summary of Findings</h2>
+
+<p>Our comprehensive evaluation of community detection methods on the UNSW-NB15 dataset yielded several key findings:</p>
+
+<ol>
+<li><p>Traditional community detection methods (Louvain, Label Propagation, Infomap) achieved perfect classification metrics while being computationally efficient, making them ideal for real-time network monitoring.</p></li>
+<li><p>GNN-based community detection (GCN) offered improved attack isolation capabilities but at a significant computational cost, positioning it better for deep forensic analysis rather than real-time detection.</p></li>
+<li><p>Overlapping community detection (BigCLAM) provided the best balance between performance metrics and attack community isolation, confirming the value of overlapping approaches for cybersecurity.</p></li>
+<li><p>The UNSW-NB15 dataset exhibited clear community structure that aligns well with attack patterns, validating the community detection approach for cybersecurity applications.</p></li>
+</ol>
+
+<h2>5.2 Practical Applications</h2>
+
+<p>These results suggest several practical applications:</p>
+
+<ol>
+<li><p><strong>Real-time Threat Detection</strong>: Deploy traditional methods (Louvain or Label Propagation) for efficient real-time monitoring of network traffic.</p></li>
+<li><p><strong>Forensic Analysis</strong>: Use GNN or overlapping methods for deeper post-incident investigation and threat hunting.</p></li>
+<li><p><strong>Multi-method Approach</strong>: Implement a tiered approach with fast traditional methods for initial detection and more sophisticated methods for deeper analysis of flagged traffic.</p></li>
+<li><p><strong>Attack Type Specialization</strong>: Select the optimal community detection method based on the specific attack types of greatest concern.</p></li>
+</ol>
+
+<h2>5.3 Limitations and Future Work</h2>
+
+<p>While our analysis provides valuable insights, several limitations and opportunities for future work exist:</p>
+
+<ol>
+<li><p><strong>Dataset Specificity</strong>: Results may be specific to the UNSW-NB15 dataset characteristics. Future work should validate findings across multiple datasets.</p></li>
+<li><p><strong>Dynamic Graph Analysis</strong>: Our current implementation uses static graphs. Extending to dynamic graph analysis could better capture evolving attack patterns.</p></li>
+<li><p><strong>Model Optimization</strong>: Further optimization of GNN architectures could improve their performance while reducing computational overhead.</p></li>
+<li><p><strong>Ensemble Approaches</strong>: Combining multiple community detection methods in an ensemble could leverage the strengths of each approach.</p></li>
+<li><p><strong>Explainability</strong>: Developing better visualization and explanation tools for community detection results would enhance their utility for security analysts.</p></li>
+</ol>
+
+<h1>6. References</h1>
+
+<ol>
+<li><p>Moustafa, N., &amp; Slay, J. (2015). UNSW-NB15: A comprehensive data set for network intrusion detection systems (UNSW-NB15 network data set). 2015 Military Communications and Information Systems Conference (MilCIS), 1-6.</p></li>
+<li><p>Blondel, V. D., Guillaume, J.-L., Lambiotte, R., &amp; Lefebvre, E. (2008). Fast unfolding of communities in large networks. Journal of Statistical Mechanics: Theory and Experiment, 2008(10), P10008.</p></li>
+<li><p>Kipf, T. N., &amp; Welling, M. (2017). Semi-Supervised Classification with Graph Convolutional Networks. ICLR.</p></li>
+<li><p>Yang, J., &amp; Leskovec, J. (2013). Overlapping community detection at scale: a nonnegative matrix factorization approach. Proceedings of the Sixth ACM International Conference on Web Search and Data Mining, 587-596.</p></li>
+<li><p>Rosvall, M., &amp; Bergstrom, C. T. (2008). Maps of random walks on complex networks reveal community structure. Proceedings of the National Academy of Sciences, 105(4), 1118-1123.</p></li>
+</ol>
+

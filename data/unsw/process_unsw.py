@@ -571,6 +571,31 @@ def save_graph(G, filepath):
         print(f"Note: Couldn't create compressed backup: {e}")
 
 def load_graph(filepath, device=None):
+    # If file ends with .pt but is actually pickle, try pickle first
+    if filepath.endswith(".pt"):
+        try:
+            import pickle
+            print(f"Trying pickle for {filepath}...")
+            with open(filepath, "rb") as f:
+                data = pickle.load(f)
+            print(f"Successfully loaded with pickle: {len(data["node_data"])} nodes")
+            
+            # Create new graph
+            G = rx.PyGraph()
+            
+            # Add nodes with data
+            for node_data in data["node_data"]:
+                G.add_node(node_data)
+            
+            # Add edges
+            for (src, dst), edge_data in zip(data["edge_list"], data["edge_data"]):
+                G.add_edge(src, dst, edge_data)
+            
+            print(f"Loaded graph with {len(G)} nodes and {G.num_edges()} edges")
+            return G
+        except Exception as pickle_e:
+            print(f"Pickle loading failed: {pickle_e}, trying torch...")
+
     """
     Load a graph from a file with GPU compatibility
     
@@ -592,7 +617,7 @@ def load_graph(filepath, device=None):
     try:
         # Use torch.load with map_location to control device placement
         if device:
-            data = torch.load(filepath, map_location=device)
+            data = torch.load(filepath, map_location=device, weights_only=False)
         else:
             data = torch.load(filepath)
     except Exception as e:

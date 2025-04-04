@@ -1,0 +1,153 @@
+/* Custom CSS for UNSW-NB15 Dashboard */
+
+/* General styling */
+body {
+  font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5 {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.navbar {
+  background-color: #1a4a72;
+  border-bottom: 3px solid #3498db;
+}
+
+.navbar-brand {
+  font-weight: bold;
+}
+
+/* Card styling */
+.card {
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+  margin-bottom: 15px;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 10px 15px;
+}
+
+/* Table styling */
+.dataTables_wrapper {
+  padding: 15px;
+  border-radius: 4px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+table.dataTable {
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+
+table.dataTable th {
+  background-color: #f5f7fa;
+  color: #2c3e50;
+  border: 1px solid #e9ecef;
+  font-weight: bold;
+  padding: 8px 10px;
+}
+
+table.dataTable td {
+  border: 1px solid #e9ecef;
+  padding: 8px 10px;
+}
+
+table.dataTable tr:hover {
+  background-color: #f5f7fa;
+}
+
+/* Commentary box styling */
+.section.sidebar {
+  background-color: #f8f9fa;
+  border-left: 1px solid #e9ecef;
+  padding: 15px;
+}
+
+/* Plot styling */
+.plotly {
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Tab navigation */
+.nav-tabs {
+  border-bottom: 2px solid #e9ecef;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  color: #495057;
+  font-weight: 500;
+  padding: 8px 15px;
+  margin-right: 5px;
+}
+
+.nav-tabs .nav-link.active {
+  color: #3498db;
+  border-bottom: 3px solid #3498db;
+  background: transparent;
+}
+
+.nav-tabs .nav-link:hover {
+  border-bottom: 3px solid #95afc0;
+}
+
+/* Value boxes */
+.value-box {
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.value-box .inner {
+  padding: 15px;
+}
+
+.value-box .icon {
+  opacity: 0.3;
+}
+
+/* Storyboard navigation */
+.storyboard-nav .sbframelist {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.storyboard-nav .sbframelist ul li.active {
+  border-bottom: 4px solid #3498db;
+}
+
+/* Footer */
+.footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  color: #6c757d;
+  font-size: 0.85rem;
+  padding: 10px 0;
+  text-align: center;
+}
+
+/* Print styling */
+@media print {
+  .navbar {
+    display: none;
+  }
+  
+  .storyboard-nav {
+    display: none;
+  }
+  
+  .section.sidebar {
+    display: none;
+  }
+  
+  .card {
+    break-inside: avoid;
+  }
+}

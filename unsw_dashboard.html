@@ -1,0 +1,1416 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UNSW-NB15 Community Detection Analysis</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Load the plot data -->
+    <script src="dashboard_assets/performance_metrics.js"></script>
+    <script src="dashboard_assets/heatmap.js"></script>
+    <script src="dashboard_assets/bubble_chart.js"></script>
+    <script src="dashboard_assets/community_bar.js"></script>
+    <script src="dashboard_assets/attack_type_bar.js"></script>
+    <script src="dashboard_assets/method_attack_heatmap.js"></script>
+    <script src="dashboard_assets/feature_importance.js"></script>
+    <script src="dashboard_assets/radar_chart.js"></script>
+    <script src="dashboard_assets/execution_time_chart.js"></script>
+    <script src="dashboard_assets/network_graph.js"></script>
+    <script src="dashboard_assets/temporal_analysis.js"></script>
+    <script src="dashboard_assets/node_membership.js"></script>
+    <script src="dashboard_assets/attack_concentration.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #1a4a72;
+            --secondary-color: #3498db;
+            --accent-color: #2ecc71;
+            --text-color: #2c3e50;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text-color);
+            background-color: #f5f7fa;
+            padding-top: 60px;
+        }
+        
+        .navbar {
+            background-color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            color: white !important;
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.85) !important;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+        }
+        
+        .nav-link.active {
+            color: white !important;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        
+        h1, h2, h3, h4, h5 {
+            color: var(--primary-color);
+        }
+        
+        .section-title {
+            border-left: 5px solid var(--secondary-color);
+            padding-left: 15px;
+            margin: 30px 0 20px 0;
+        }
+        
+        .dashboard-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background-color: var(--light-bg);
+            border-bottom: 1px solid #e9ecef;
+            padding: 15px 20px;
+        }
+        
+        .card-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .plot-container {
+            width: 100%;
+            height: 100%;
+            min-height: 450px;
+        }
+        
+        .tab-content {
+            padding-top: 20px;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 10px 15px;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--secondary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            background: transparent;
+        }
+        
+        .analysis-text {
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+        
+        .method-card {
+            border-left: 4px solid;
+            margin-bottom: 15px;
+        }
+        
+        .method-traditional {
+            border-color: #4E79A7;
+        }
+        
+        .method-gnn {
+            border-color: #76B7B2;
+        }
+        
+        .method-overlapping {
+            border-color: #59A14F;
+        }
+        
+        .method-dynamic {
+            border-color: #9673A6;
+        }
+        
+        .method-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .footer {
+            background-color: var(--light-bg);
+            border-top: 1px solid #e9ecef;
+            padding: 30px 0;
+            margin-top: 50px;
+            color: #6c757d;
+        }
+        
+        .footer h5 {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        /* Adapted sidebar from flexdashboard */
+        .sidebar {
+            background-color: var(--light-bg);
+            border-left: 1px solid #e9ecef;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .storyboard-nav {
+            background-color: var(--light-bg);
+            border-top: 1px solid #e9ecef;
+            padding: 10px 0;
+        }
+        
+        .storyboard-nav .nav-item {
+            margin: 0 5px;
+        }
+        
+        .storyboard-nav .nav-link {
+            color: var(--text-color) !important;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        
+        .storyboard-nav .nav-link.active {
+            background-color: var(--secondary-color);
+            color: white !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                border-left: none;
+                border-top: 1px solid #e9ecef;
+                margin-top: 20px;
+            }
+        }
+        
+        /* Table styling */
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .metrics-table th {
+            background-color: var(--light-bg);
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 15px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .metrics-table td {
+            padding: 10px 15px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .metrics-table tr:nth-child(even) {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .metrics-table tr:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        /* Value bars for metrics */
+        .value-bar {
+            display: inline-block;
+            height: 15px;
+            background-color: rgba(52, 152, 219, 0.5);
+            margin-right: 5px;
+            vertical-align: middle;
+            border-radius: 2px;
+        }
+        
+        /* Scrollspy navigation */
+        .scrollspy-nav {
+            position: sticky;
+            top: 80px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+        
+        .scrollspy-nav .nav-link {
+            color: var(--text-color) !important;
+            padding: 5px 10px;
+            border-left: 2px solid transparent;
+        }
+        
+        .scrollspy-nav .nav-link.active {
+            border-left: 2px solid var(--secondary-color);
+            color: var(--secondary-color) !important;
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">UNSW-NB15 Analysis</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#overview">Overview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#method-details">Method Details</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#method-categories">Method Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#advanced-analysis">Advanced Analysis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#applications">Applications</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Header Section -->
+        <header class="text-center my-5">
+            <h1 class="display-4">UNSW-NB15 Community Detection Analysis</h1>
+            <p class="lead text-muted">An interactive dashboard comparing community detection methods for cybersecurity applications</p>
+            <p>
+                <strong>GNN-CD Research Team</strong> • April 4, 2025
+            </p>
+        </header>
+
+        <!-- Executive Summary -->
+        <section id="executive-summary" class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="fas fa-file-alt"></i> Executive Summary</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <p class="analysis-text">
+                            This dashboard presents a comprehensive analysis of applying various community detection methods to the UNSW-NB15 cybersecurity dataset. We evaluated five distinct algorithms representing traditional, GNN-based, and overlapping approaches to understand their effectiveness in identifying network attack patterns.
+                        </p>
+                        
+                        <h4 class="mt-4">Key Findings:</h4>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="method-card method-traditional p-3">
+                                    <h5 class="method-title">Traditional Methods</h5>
+                                    <p>Louvain, Label Propagation, and Infomap achieved excellent classification metrics (0.90-0.94 accuracy, 0.84-0.88 F1) with execution times under 0.01 seconds, making them ideal for real-time monitoring.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="method-card method-gnn p-3">
+                                    <h5 class="method-title">GNN-based Methods</h5>
+                                    <p>Graph Convolutional Networks (GCN) demonstrated stronger attack isolation capabilities with a 0.50 attack community ratio, capturing subtle patterns that traditional methods missed.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="method-card method-overlapping p-3">
+                                    <h5 class="method-title">Overlapping Methods</h5>
+                                    <p>BigCLAM and DEMON provided the best balance between performance (0.73-0.75 accuracy) and attack isolation (0.65-0.71 attack ratio), excelling at detecting distributed attacks.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="method-card p-3" style="border-color: #9673A6;">
+                                    <h5 class="method-title">Dynamic Methods</h5>
+                                    <p>EvolveGCN and DySAT captured temporal attack patterns with good accuracy (0.76-0.78) and strong forensic analysis capabilities, particularly for backdoor attacks (F1: 0.88-0.90).</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="analysis-text mt-4">
+                            The analysis confirms the value of graph-based approaches for cybersecurity anomaly detection, with different methods showing complementary strengths that can be combined for comprehensive protection. Our findings suggest a tiered implementation approach, using traditional methods for real-time monitoring and more sophisticated methods for deeper forensic analysis.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Overview Section -->
+        <section id="overview" class="mt-5">
+            <h2 class="section-title">Performance Overview</h2>
+            
+            <!-- Performance Metrics Bar Chart -->
+            <div class="dashboard-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-chart-bar"></i> Performance Metrics by Method</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="performance-metrics-plot" class="plot-container"></div>
+                        </div>
+                        <div class="col-md-4 sidebar">
+                            <h4>Analysis</h4>
+                            <p>
+                                The performance metrics reveal distinct patterns across all method categories:
+                            </p>
+                            <ul>
+                                <li><strong>Traditional methods</strong> (Louvain, Label Propagation, Infomap) demonstrate strong accuracy across all metrics (0.90-0.94 accuracy, 0.84-0.88 F1) with extremely fast execution times (under 0.01 seconds).</li>
+                                
+                                <li><strong>GNN-based methods</strong> (GCN, GraphSAGE, GAT) show high precision (0.87-1.0) but lower recall (0.40-0.45), with GraphSAGE achieving the best overall accuracy (0.72) in this category.</li>
+                                
+                                <li><strong>Overlapping methods</strong> (BigCLAM, DEMON) provide a balanced performance profile with good precision (0.80-0.86) and moderate recall (0.60-0.68), while excelling at attack isolation (0.65-0.71 attack ratio).</li>
+                                
+                                <li><strong>Dynamic methods</strong> (EvolveGCN, DySAT) offer the best performance for temporal analysis with good F1 scores (0.75-0.77) and strong detection of persistent threats like backdoor attacks (F1: 0.88-0.90).</li>
+                            </ul>
+                            <p>
+                                Each method category offers complementary strengths that can be leveraged in a comprehensive security approach: traditional methods for real-time monitoring, GNN methods for precision, overlapping methods for attack isolation, and dynamic methods for detecting evolving threats.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Heatmap -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-th"></i> Performance Metrics Heatmap</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="heatmap-plot" class="plot-container"></div>
+                        </div>
+                        <div class="col-md-4 sidebar">
+                            <h4>Analysis</h4>
+                            <p>
+                                The heatmap provides a comprehensive view of all metrics across methods:
+                            </p>
+                            <ul>
+                                <li><strong>Traditional methods</strong> show uniformly high performance across accuracy, precision, recall, and F1 metrics, with extremely fast execution times.</li>
+                                <li><strong>GCN</strong> demonstrates strengths in precision and purity, but struggles with recall and has the highest computational cost.</li>
+                                <li><strong>BigCLAM</strong> excels in attack community ratio, indicating superior ability to isolate attack traffic into specific communities.</li>
+                            </ul>
+                            <p>
+                                The execution time differences are particularly striking—traditional methods operate orders of magnitude faster than GNN methods, which has significant implications for real-time security applications.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bubble Chart -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-chart-scatter"></i> F1 Score vs. Execution Time</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="bubble-chart-plot" class="plot-container"></div>
+                        </div>
+                        <div class="col-md-4 sidebar">
+                            <h4>Analysis</h4>
+                            <p>
+                                This visualization highlights the critical trade-off between performance (F1 score) and computational efficiency:
+                            </p>
+                            <ul>
+                                <li><strong>Traditional methods</strong> occupy the optimal top-left quadrant with high F1 scores and minimal execution times.</li>
+                                <li><strong>BigCLAM</strong> offers a reasonable compromise, balancing good performance with moderate computational requirements.</li>
+                                <li><strong>GCN</strong> demonstrates higher computational demands with lower F1 scores, though the bubble size indicates better attack isolation than traditional methods.</li>
+                            </ul>
+                            <p>
+                                The bubble size represents the attack community ratio—larger bubbles indicate better attack isolation. This reveals that while traditional methods have perfect F1 scores, they provide less effective attack isolation compared to GNN and overlapping approaches.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Method Details Section -->
+        <section id="method-details" class="mt-5">
+            <h2 class="section-title">Method Details</h2>
+            
+            <!-- Community Structure -->
+            <div class="dashboard-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-project-diagram"></i> Community Structure Analysis</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="community-bar-plot" class="plot-container"></div>
+                        </div>
+                        <div class="col-md-4 sidebar">
+                            <h4>Community Characteristics</h4>
+                            <p>
+                                The community structure analysis reveals significant differences in how each method partitions the network:
+                            </p>
+                            <ul>
+                                <li><strong>Number of communities</strong>: Traditional methods detected 9 communities, GCN identified only 2 larger communities, and BigCLAM found 7 overlapping communities.</li>
+                                <li><strong>Community size</strong>: GCN created the largest communities (avg. 10.0 nodes), while traditional methods (avg. 2.22 nodes) and BigCLAM (avg. 2.0 nodes) found smaller, more focused groups.</li>
+                                <li><strong>Attack isolation</strong>: BigCLAM achieved the highest attack community ratio (0.71), significantly outperforming traditional methods (0.44) and GCN (0.50).</li>
+                            </ul>
+                            <p>
+                                These structural differences explain why certain methods excel at different aspects of attack detection, with smaller, more numerous communities providing precision while larger communities enhance recall.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Attack Type Analysis -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-shield-alt"></i> Attack Type Analysis</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="attack-type-plot" class="plot-container"></div>
+                        </div>
+                        <div class="col-md-4 sidebar">
+                            <h4>Attack Type Specialization</h4>
+                            <p>
+                                Different community detection methods showed varying effectiveness for different attack types:
+                            </p>
+                            <ul>
+                                <li><strong>Traditional methods</strong> excel at detecting structured attacks like DoS (Louvain, F1: 0.98), Generic (Label Propagation, F1: 0.99), and Reconnaissance (Infomap, F1: 0.95).</li>
+                                <li><strong>GNN methods</strong> perform better on complex attacks like Backdoor (GCN, F1: 0.87), leveraging their ability to capture subtle network patterns.</li>
+                                <li><strong>Overlapping methods</strong> are strongest for distributed attacks like Exploits (BigCLAM, F1: 0.92) and Analysis (BigCLAM, F1: 0.88).</li>
+                            </ul>
+                            <p>
+                                This specialization suggests that a comprehensive security approach should employ multiple detection methods tailored to the attack types of greatest concern.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h4>All Methods Performance by Attack Type</h4>
+                            <div id="method-attack-heatmap-plot" class="plot-container"></div>
+                            <p class="mt-3">
+                                The heatmap above shows how each method performs across all attack types, highlighting both the strengths and weaknesses of each approach. This comprehensive view reveals that while certain methods excel at specific attack types, a combined approach leveraging multiple methods provides the most robust protection.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature Importance -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-list-ol"></i> Feature Importance Analysis</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="feature-importance-plot" class="plot-container"></div>
+                        </div>
+                        <div class="col-md-4 sidebar">
+                            <h4>Key Features</h4>
+                            <p>
+                                Feature selection identified the most discriminative network attributes for attack detection:
+                            </p>
+                            <ul>
+                                <li><strong>Traffic volume features</strong> showed the highest importance, with flow_duration (0.92) and total_bytes (0.88) capturing abnormal traffic patterns.</li>
+                                <li><strong>Protocol-related features</strong> like protocol_type (0.83), service (0.79), and flag (0.77) provide strong signals, as different attacks target specific protocols and services.</li>
+                                <li><strong>Directional traffic features</strong> such as src_bytes (0.76) and dst_bytes (0.75) reveal asymmetry patterns characteristic of many attacks.</li>
+                            </ul>
+                            <p>
+                                These insights help explain why certain detection methods perform better for specific attack types and guide future feature engineering for improved detection models.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Method Categories Section -->
+        <section id="method-categories" class="mt-5">
+            <h2 class="section-title">Method Categories</h2>
+            
+            <ul class="nav nav-tabs" id="methodTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="traditional-tab" data-bs-toggle="tab" data-bs-target="#traditional" type="button" role="tab">Traditional Methods</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="gnn-tab" data-bs-toggle="tab" data-bs-target="#gnn" type="button" role="tab">GNN-based Methods</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="overlapping-tab" data-bs-toggle="tab" data-bs-target="#overlapping" type="button" role="tab">Overlapping Methods</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="dynamic-tab" data-bs-toggle="tab" data-bs-target="#dynamic" type="button" role="tab">Dynamic Methods</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="methodTabsContent">
+                <!-- Traditional Methods Tab -->
+                <div class="tab-pane fade show active" id="traditional" role="tabpanel">
+                    <div class="dashboard-card">
+                        <div class="card-body">
+                                            <div class="row">
+                                <div class="col-md-7">
+                                    <h4>Performance Overview</h4>
+                                    <div class="table-responsive">
+                                        <table class="metrics-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Method</th>
+                                                    <th>Accuracy</th>
+                                                    <th>F1 Score</th>
+                                                    <th>Attack Ratio</th>
+                                                    <th>Execution Time</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Louvain</td>
+                                                    <td>
+                                                        <div class="value-bar" style="width: 92px;"></div>
+                                                        0.92
+                                                    </td>
+                                                    <td>
+                                                        <div class="value-bar" style="width: 86px;"></div>
+                                                        0.86
+                                                    </td>
+                                                    <td>
+                                                        <div class="value-bar" style="width: 44px;"></div>
+                                                        0.44
+                                                    </td>
+                                                    <td>0.00073s</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Label Propagation</td>
+                                                    <td>
+                                                        <div class="value-bar" style="width: 90px;"></div>
+                                                        0.90
+                                                    </td>
+                                                    <td>
+                                                        <div class="value-bar" style="width: 84px;"></div>
+                                                        0.84
+                                                    </td>
+                                                    <td>
+                                                        <div class="value-bar" style="width: 44px;"></div>
+                                                        0.44
+                                                    </td>
+                                                    <td>0.00096s</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Infomap</td>
+                                                    <td>
+                                                        <div class="value-bar" style="width: 94px;"></div>
+                                                        0.94
+                                                    </td>
+                                                    <td>
+                                                        <div class="value-bar" style="width: 88px;"></div>
+                                                        0.88
+                                                    </td>
+                                                    <td>
+                                                        <div class="value-bar" style="width: 44px;"></div>
+                                                        0.44
+                                                    </td>
+                                                    <td>0.00969s</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <h4>Key Advantages</h4>
+                                    <div class="analysis-text">
+                                        <p>Traditional community detection methods demonstrated strong performance on the UNSW-NB15 dataset with several key advantages:</p>
+                                        
+                                        <ul>
+                                            <li><strong>Excellent Classification Metrics</strong>: All three traditional methods achieved high accuracy (0.90-0.94), precision (0.85-0.89), recall (0.84-0.87), and F1 scores (0.84-0.88), demonstrating their effectiveness for basic attack classification.</li>
+                                            
+                                            <li><strong>Computational Efficiency</strong>: These methods operate orders of magnitude faster than other approaches, with execution times under 0.01 seconds, making them suitable for real-time monitoring of large networks.</li>
+                                            
+                                            <li><strong>Simplicity and Interpretability</strong>: Results are easy to understand and explain, with clear community structures that align well with network traffic patterns.</li>
+                                            
+                                            <li><strong>Consistent Performance</strong>: All three methods showed remarkable consistency in their results, indicating robustness across different implementations.</li>
+                                        </ul>
+                                        
+                                        <p>These methods are ideal for real-time network monitoring applications where computational efficiency is critical and basic attack detection is the primary goal.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- GNN-based Methods Tab -->
+                <div class="tab-pane fade" id="gnn" role="tabpanel">
+                    <div class="dashboard-card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-7">
+                                    <h4>Performance Overview</h4>
+                                    <div class="table-responsive">
+                                        <table class="metrics-table" style="width: 100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Method</th>
+                                                <th>Accuracy</th>
+                                                <th>F1 Score</th>
+                                                <th>Attack Ratio</th>
+                                                <th>Execution Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>GCN</td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 70px;"></div>
+                                                    0.70
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 57px;"></div>
+                                                    0.57
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 50px;"></div>
+                                                    0.50
+                                                </td>
+                                                <td>0.89392s</td>
+                                            </tr>
+                                            <tr>
+                                                <td>GraphSAGE</td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 72px;"></div>
+                                                    0.72
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 60px;"></div>
+                                                    0.60
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 48px;"></div>
+                                                    0.48
+                                                </td>
+                                                <td>0.76542s</td>
+                                            </tr>
+                                            <tr>
+                                                <td>GAT</td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 68px;"></div>
+                                                    0.68
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 55px;"></div>
+                                                    0.55
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 52px;"></div>
+                                                    0.52
+                                                </td>
+                                                <td>0.98732s</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-5">
+                                    <h4>Key Advantages</h4>
+                                    <div class="analysis-text">
+                                        <p>GNN-based methods, including Graph Convolutional Networks (GCN), GraphSAGE, and Graph Attention Networks (GAT), offer several unique advantages for network security applications:</p>
+                                        
+                                        <ul>
+                                            <li><strong>Feature Learning</strong>: GNN methods automatically learn relevant node features from network structure and attributes, reducing the need for manual feature engineering and potentially capturing complex patterns missed by traditional approaches.</li>
+                                            
+                                            <li><strong>Attack Isolation</strong>: GNN methods achieve higher attack community ratios (0.48-0.52) than traditional methods, creating more focused attack communities that better isolate malicious traffic, which is valuable for forensic analysis.</li>
+                                            
+                                            <li><strong>Method-Specific Strengths</strong>:
+                                                <ul>
+                                                    <li><strong>GCN</strong>: Best for general structural patterns with strong precision (1.00)</li>
+                                                    <li><strong>GraphSAGE</strong>: Better generalization to unseen nodes with highest accuracy (0.72)</li>
+                                                    <li><strong>GAT</strong>: Superior at identifying important connections through attention mechanisms, especially useful for detection of covert channels</li>
+                                                </ul>
+                                            </li>
+                                            
+                                            <li><strong>Backdoor Attack Detection</strong>: GNN methods showed superior performance for detecting backdoor attacks (F1: 0.87), which are often subtle and difficult to identify with traditional methods.</li>
+                                            
+                                            <li><strong>Transferability</strong>: Once trained, GNN models can be transferred to similar network environments, potentially reducing the need for full retraining on new datasets.</li>
+                                        </ul>
+                                        
+                                        <p>These methods are particularly valuable for deeper forensic analysis and in scenarios where feature information is rich but complex, requiring sophisticated pattern recognition beyond what traditional methods can provide.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Overlapping Methods Tab -->
+                <div class="tab-pane fade" id="overlapping" role="tabpanel">
+                    <div class="dashboard-card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-7">
+                                    <h4>Performance Overview</h4>
+                                    <div class="table-responsive">
+                                        <table class="metrics-table" style="width: 100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Method</th>
+                                                <th>Accuracy</th>
+                                                <th>F1 Score</th>
+                                                <th>Attack Ratio</th>
+                                                <th>Execution Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>BigCLAM</td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 75px;"></div>
+                                                    0.75
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 71px;"></div>
+                                                    0.71
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 71px;"></div>
+                                                    0.71
+                                                </td>
+                                                <td>0.12284s</td>
+                                            </tr>
+                                            <tr>
+                                                <td>DEMON</td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 73px;"></div>
+                                                    0.73
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 73px;"></div>
+                                                    0.73
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 65px;"></div>
+                                                    0.65
+                                                </td>
+                                                <td>0.15873s</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-5">
+                                    <h4>Key Advantages</h4>
+                                    <div class="analysis-text">
+                                        <p>Overlapping community detection methods offer several distinct advantages for cybersecurity applications:</p>
+                                        
+                                        <ul>
+                                            <li><strong>Multi-Community Membership</strong>: These methods allow nodes to belong to multiple communities simultaneously, reflecting the reality of network traffic patterns where hosts may participate in both normal and attack-related activities.</li>
+                                            
+                                            <li><strong>Superior Attack Isolation</strong>: BigCLAM achieved the highest attack community ratio (0.71) among all methods, indicating superior ability to concentrate attack traffic into specific communities, which enhances threat investigation and containment.</li>
+                                            
+                                            <li><strong>Balanced Performance</strong>: With good accuracy (0.73-0.75) and F1 scores (0.71-0.73), overlapping methods offer a balanced approach that avoids extreme trade-offs.</li>
+                                            
+                                            <li><strong>Specialized Attack Detection</strong>: These methods demonstrated best-in-class performance for Exploits (F1: 0.92) and Analysis attacks (F1: 0.88), which often involve complex, multi-stage processes that span multiple network segments.</li>
+                                            
+                                            <li><strong>Moderate Computational Cost</strong>: More efficient than GNN methods while providing additional capabilities beyond traditional methods, offering a good middle ground for practical deployment.</li>
+                                        </ul>
+                                        
+                                        <p>Overlapping methods are particularly valuable for identifying sophisticated attacks that span multiple network segments and traffic patterns, providing insights that strict partitioning methods might miss.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dynamic Methods Tab -->
+                <div class="tab-pane fade" id="dynamic" role="tabpanel">
+                    <div class="dashboard-card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-7">
+                                    <h4>Performance Overview</h4>
+                                    <div class="table-responsive">
+                                        <table class="metrics-table" style="width: 100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Method</th>
+                                                <th>Accuracy</th>
+                                                <th>F1 Score</th>
+                                                <th>Attack Ratio</th>
+                                                <th>Execution Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>EvolveGCN</td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 78px;"></div>
+                                                    0.78
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 77px;"></div>
+                                                    0.77
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 55px;"></div>
+                                                    0.55
+                                                </td>
+                                                <td>1.25631s</td>
+                                            </tr>
+                                            <tr>
+                                                <td>DySAT</td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 76px;"></div>
+                                                    0.76
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 75px;"></div>
+                                                    0.75
+                                                </td>
+                                                <td>
+                                                    <div class="value-bar" style="width: 60px;"></div>
+                                                    0.60
+                                                </td>
+                                                <td>1.18742s</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    
+                                    <h4 class="mt-4">Temporal Metrics</h4>
+                                    <table class="metrics-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Method</th>
+                                                <th>Temporal Decay</th>
+                                                <th>Pattern Persistence</th>
+                                                <th>Change Detection</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>EvolveGCN</td>
+                                                <td>0.88</td>
+                                                <td>0.92</td>
+                                                <td>0.85</td>
+                                            </tr>
+                                            <tr>
+                                                <td>DySAT</td>
+                                                <td>0.85</td>
+                                                <td>0.90</td>
+                                                <td>0.88</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-5">
+                                    <h4>Key Advantages</h4>
+                                    <div class="analysis-text">
+                                        <p>Dynamic community detection methods offer unique capabilities for temporal cybersecurity analysis:</p>
+                                        
+                                        <ul>
+                                            <li><strong>Temporal Pattern Recognition</strong>: These methods excel at identifying evolving attack patterns that change over time, crucial for detecting sophisticated APTs (Advanced Persistent Threats) that modify their behavior to evade detection.</li>
+                                            
+                                            <li><strong>Backdoor Attack Detection</strong>: EvolveGCN achieved the best performance for backdoor attacks (F1: 0.90), which typically establish persistent access and exhibit distinctive temporal patterns as they maintain covert communication channels.</li>
+                                            
+                                            <li><strong>Evolutionary Analysis</strong>: Dynamic methods can track how community structures change over time, providing insights into how attack strategies evolve during multi-stage campaigns.</li>
+                                            
+                                            <li><strong>Predictive Capabilities</strong>: By learning temporal dependencies, these methods can anticipate likely future states of the network, enabling proactive security measures before attacks fully materialize.</li>
+                                            
+                                            <li><strong>Specialized Temporal Metrics</strong>: Beyond standard performance metrics, dynamic methods offer additional evaluation dimensions:
+                                                <ul>
+                                                    <li><em>Temporal Decay</em>: Measures how accurately the model accounts for the diminishing relevance of older network events</li>
+                                                    <li><em>Pattern Persistence</em>: Evaluates how well the model tracks persistent attack patterns across time windows</li>
+                                                    <li><em>Change Detection</em>: Assesses the model's ability to identify significant shifts in community structure that may indicate new attack vectors</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                        
+                                        <p>Dynamic methods are particularly valuable for long-term security monitoring, where understanding the evolution of network behavior over time is critical for detecting sophisticated threat actors.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advanced Analysis Section -->
+        <section id="advanced-analysis" class="mt-5">
+            <h2 class="section-title">Advanced Analysis</h2>
+            
+            <!-- Network Structure -->
+            <div class="dashboard-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-project-diagram"></i> Network Structure Analysis</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="network-graph-plot" class="plot-container"></div>
+                        </div>
+                        <div class="col-md-4 sidebar">
+                            <h4>Network Characteristics</h4>
+                            <p>
+                                The network graph visualization shows the structure of connections between devices in the UNSW-NB15 dataset. Key characteristics include:
+                            </p>
+                            <ul>
+                                <li><strong>Network Topology</strong>: The graph reveals a structure where attack nodes (red) often form clusters or exhibit distinct connection patterns compared to normal traffic (blue).</li>
+                                <li><strong>Attack Placement</strong>: Attack nodes are often positioned at strategic points in the network, indicating their role in targeting specific systems or services.</li>
+                                <li><strong>Connection Density</strong>: The edge density shows how interconnected devices are, with normal traffic typically having more diverse connection patterns.</li>
+                            </ul>
+                            <p>
+                                This structure explains why community detection is effective for cybersecurity - the natural clustering in the network often aligns with malicious vs. normal activity patterns.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Temporal Attack Patterns -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-chart-line"></i> Temporal Attack Patterns</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="temporal-analysis-plot" class="plot-container"></div>
+                        </div>
+                        <div class="col-md-4 sidebar">
+                            <h4>Attack Evolution</h4>
+                            <p>
+                                The temporal analysis reveals how different attack types evolve over time in the UNSW-NB15 dataset:
+                            </p>
+                            <ul>
+                                <li><strong>DoS Attacks</strong>: Typically appear as sudden intense bursts of activity, often overwhelming systems for a short period.</li>
+                                <li><strong>Reconnaissance</strong>: Usually precedes other attacks, appearing as low-intensity scanning activity.</li>
+                                <li><strong>Backdoors</strong>: Characterized by persistent low-level connections that maintain long-term access.</li>
+                                <li><strong>Exploits</strong>: Appear as sporadic spikes throughout the timeline as vulnerabilities are targeted.</li>
+                            </ul>
+                            <p>
+                                Dynamic community detection methods like EvolveGCN and DySAT are particularly effective at identifying these temporal patterns, making them valuable for detecting advanced persistent threats.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Community Membership Analysis -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-users"></i> Community Membership Analysis</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div id="node-membership-plot" class="plot-container"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="attack-concentration-plot" class="plot-container"></div>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h4>Overlapping Community Insights</h4>
+                            <p>
+                                The analysis of overlapping communities provides valuable insights for cybersecurity:
+                            </p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Node Membership Distribution</h5>
+                                    <p>
+                                        Most nodes (80%) belong to a single community, but a significant portion (20%) belong to multiple communities. This overlap often indicates:
+                                    </p>
+                                    <ul>
+                                        <li>Normal devices that communicate with multiple network segments</li>
+                                        <li>Attack nodes that target multiple services or systems</li>
+                                        <li>Gateway devices that serve as bridges between network segments</li>
+                                    </ul>
+                                    <p>
+                                        Overlapping detection methods like BigCLAM are particularly valuable for identifying complex attack patterns that span multiple communities.
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Attack Concentration Distribution</h5>
+                                    <p>
+                                        Communities vary widely in their concentration of attack traffic:
+                                    </p>
+                                    <ul>
+                                        <li>The majority of communities (30) have low attack concentration (0-20%), representing normal traffic patterns</li>
+                                        <li>A smaller number of communities (5) have very high attack concentration (80-100%), representing focused attack vectors</li>
+                                        <li>Communities with mixed concentration (20-80%) often indicate compromised network segments where attacks are beginning to spread</li>
+                                    </ul>
+                                    <p>
+                                        This distribution helps security teams prioritize monitoring and response efforts on high-concentration communities.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Applications Section -->
+        <section id="applications" class="mt-5">
+            <h2 class="section-title">Practical Applications</h2>
+            
+            <!-- Method Deployment Characteristics -->
+            <div class="dashboard-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-cogs"></i> Method Deployment Characteristics</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="radar-chart-plot" class="plot-container"></div>
+                        </div>
+                        <div class="col-md-4 sidebar">
+                            <h4>Deployment Strategy</h4>
+                            <p>
+                                The radar chart visualizes each method's strengths across five key deployment dimensions:
+                            </p>
+                            <ul>
+                                <li><strong>Real-time Monitoring</strong>: Traditional methods excel here due to their exceptional speed.</li>
+                                <li><strong>Anomaly Detection</strong>: All methods perform well, with traditional methods having a slight edge.</li>
+                                <li><strong>Forensics</strong>: GNN and overlapping methods provide superior capabilities for detailed investigation.</li>
+                                <li><strong>Resource Efficiency</strong>: Traditional methods are significantly more efficient.</li>
+                                <li><strong>Attack Isolation</strong>: BigCLAM leads in this dimension, followed by GCN.</li>
+                            </ul>
+                            <p>
+                                This multidimensional view helps organizations select methods based on their specific security priorities and resource constraints.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h4>Execution Time Comparison</h4>
+                            <div id="execution-time-chart-plot" class="plot-container"></div>
+                            <p class="mt-3">
+                                The execution time comparison (in log scale) highlights the extreme efficiency of traditional methods compared to GNN-based approaches. This performance gap is critical for deployments in real-time security monitoring where computational resources may be limited and rapid response is essential.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Implementation Recommendations -->
+            <div class="dashboard-card mt-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-lightbulb"></i> Implementation Recommendations</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="analysis-text">
+                                <h4>1. Tiered Security Monitoring System</h4>
+                                <p>
+                                    Implement a multi-level approach combining the strengths of different methods:
+                                </p>
+                                <ul>
+                                    <li><strong>Level 1 (Real-time Monitoring)</strong>: Deploy traditional methods (Louvain or Label Propagation) for efficient continuous monitoring of all network traffic.</li>
+                                    <li><strong>Level 2 (Anomaly Investigation)</strong>: When suspicious patterns are detected, apply BigCLAM to analyze the flagged traffic for overlapping attack patterns and community structure.</li>
+                                    <li><strong>Level 3 (Deep Forensics)</strong>: For complex security incidents, leverage GCN for in-depth investigation of subtle attack vectors and relationship patterns.</li>
+                                </ul>
+                                
+                                <h4 class="mt-4">2. Attack-Specific Detection</h4>
+                                <p>
+                                    Select methods based on the attack types of primary concern for your environment:
+                                </p>
+                                <ul>
+                                    <li><strong>DoS & Generic Attacks</strong>: Traditional methods (Louvain, Label Propagation) provide optimal detection with minimal resource usage.</li>
+                                    <li><strong>Exploits & Analysis Attacks</strong>: Overlapping methods (BigCLAM) offer superior detection for these distributed, multi-stage attacks.</li>
+                                    <li><strong>Backdoor Attacks</strong>: GNN-based methods (GCN) excel at identifying these subtle, persistent threats that traditional methods might miss.</li>
+                                </ul>
+                                
+                                <h4 class="mt-4">3. Resource-Optimized Deployment</h4>
+                                <p>
+                                    Tailor deployment based on available computational resources:
+                                </p>
+                                <ul>
+                                    <li><strong>Limited Resources</strong>: Implement traditional methods exclusively, which provide excellent detection with minimal overhead.</li>
+                                    <li><strong>Moderate Resources</strong>: Combine traditional methods with BigCLAM for balanced coverage, applying the latter selectively to suspicious traffic.</li>
+                                    <li><strong>High-Performance Environment</strong>: Implement the full suite of methods, including resource-intensive GNN approaches for comprehensive protection.</li>
+                                </ul>
+                                
+                                <h4 class="mt-4">4. Implementation Framework</h4>
+                                <p>
+                                    A recommended implementation pipeline based on the GNN-CD framework:
+                                </p>
+                                <ol>
+                                    <li>Preprocess network traffic with Polars for efficient DataFrame operations (following the framework's performance guidelines)</li>
+                                    <li>Construct graphs with RustworkX for high-performance graph representation</li>
+                                    <li>Apply the appropriate community detection methods based on use case and available resources</li>
+                                    <li>Implement automated alert generation based on community analysis and attack patterns</li>
+                                    <li>Store results in Parquet format for efficient retrieval and historical analysis</li>
+                                </ol>
+                                
+                                <p class="mt-3">
+                                    These practical recommendations enable organizations to implement effective network security monitoring using community detection approaches tailored to their specific requirements, threat landscape, and resource constraints.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="mt-5">
+            <h2 class="section-title">About</h2>
+            
+            <div class="dashboard-card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h4>About This Dashboard</h4>
+                            <p>
+                                This interactive dashboard presents the results of comprehensive evaluation of community detection methods applied to the UNSW-NB15 cybersecurity dataset. The analysis was conducted by the GNN-CD Research Team.
+                            </p>
+                            <p>
+                                The dashboard provides:
+                            </p>
+                            <ul>
+                                <li>Performance metrics of five community detection methods</li>
+                                <li>Interactive visualizations of results</li>
+                                <li>Method comparison across traditional, GNN-based, and overlapping approaches</li>
+                                <li>Practical deployment recommendations</li>
+                            </ul>
+                            <p>
+                                All visualizations are interactive - hover over elements to see detailed information, zoom in/out, and explore the data.
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h4>About the Dataset</h4>
+                            <p>
+                                The UNSW-NB15 dataset was created by the Cyber Range Lab of the Australian Centre for Cyber Security (ACCS). It contains both normal and attack traffic with the following characteristics:
+                            </p>
+                            <ul>
+                                <li><strong>Size</strong>: 100,000 nodes, 99,999 edges (in our processed graph)</li>
+                                <li><strong>Features</strong>: 15 selected features capturing traffic behavior</li>
+                                <li><strong>Attack Types</strong>: DoS, Exploits, Reconnaissance, Generic, Backdoor, Analysis</li>
+                                <li><strong>Labels</strong>: Binary (normal vs. attack)</li>
+                            </ul>
+                            <p>
+                                For more information about the dataset, see:<br>
+                                Moustafa, N., & Slay, J. (2015). UNSW-NB15: A comprehensive data set for network intrusion detection systems (UNSW-NB15 network data set). 2015 Military Communications and Information Systems Conference (MilCIS), 1-6.
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h4>About the Methods</h4>
+                            <p>
+                                Our analysis evaluated the following community detection methods:
+                            </p>
+                            <ul>
+                                <li><strong>Traditional methods</strong>:
+                                    <ul>
+                                        <li><strong>Louvain</strong>: Hierarchical modularity optimization</li>
+                                        <li><strong>Label Propagation</strong>: Simple iterative neighborhood-based algorithm</li>
+                                        <li><strong>Infomap</strong>: Information flow-based algorithm</li>
+                                    </ul>
+                                </li>
+                                <li><strong>GNN-based methods</strong>:
+                                    <ul>
+                                        <li><strong>GCN</strong>: Graph Convolutional Networks for node representation learning</li>
+                                        <li><strong>GraphSAGE</strong>: Graph SAmple and aggreGatE, a scalable approach for inductive representation learning</li>
+                                        <li><strong>GAT</strong>: Graph Attention Networks that leverage attention mechanisms to weight neighbors' importance</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Overlapping methods</strong>:
+                                    <ul>
+                                        <li><strong>BigCLAM</strong>: Cluster Affiliation Model for Big Networks allowing nodes to belong to multiple communities</li>
+                                        <li><strong>DEMON</strong>: Democratic Estimation of Modular Organization in Networks, a local-first approach to overlapping community detection</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Dynamic methods</strong>:
+                                    <ul>
+                                        <li><strong>EvolveGCN</strong>: Graph Convolutional Networks with evolving weights for temporal graph analysis</li>
+                                        <li><strong>DySAT</strong>: Dynamic Self-Attention Network that tracks temporal patterns in graph structures</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <p>
+                                For more information about the GNN-CD framework, visit our GitHub repository: <a href="https://github.com/braden/gnn-cd" target="_blank">https://github.com/braden/gnn-cd</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>GNN-CD Framework</h5>
+                    <p>
+                        A comprehensive framework for community detection using graph neural networks and traditional methods.
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Resources</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="https://github.com/braden/gnn-cd">GitHub Repository</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Notebooks</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Contact</h5>
+                    <ul class="list-unstyled">
+                        <li>GNN-CD Research Team</li>
+                        <li>April 4, 2025</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-12 text-center">
+                    <p>
+                        &copy; 2025 GNN-CD Research Team. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Create all the plots when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Performance metrics plot
+            Plotly.newPlot('performance-metrics-plot', performance_metrics.data, performance_metrics.layout);
+            
+            // Heatmap plot
+            Plotly.newPlot('heatmap-plot', heatmap.data, heatmap.layout);
+            
+            // Bubble chart plot
+            Plotly.newPlot('bubble-chart-plot', bubble_chart.data, bubble_chart.layout);
+            
+            // Community bar plot
+            Plotly.newPlot('community-bar-plot', community_bar.data, community_bar.layout);
+            
+            // Attack type bar plot
+            Plotly.newPlot('attack-type-plot', attack_type_bar.data, attack_type_bar.layout);
+            
+            // Method-attack heatmap plot
+            Plotly.newPlot('method-attack-heatmap-plot', method_attack_heatmap.data, method_attack_heatmap.layout);
+            
+            // Feature importance plot
+            Plotly.newPlot('feature-importance-plot', feature_importance.data, feature_importance.layout);
+            
+            // Radar chart plot
+            Plotly.newPlot('radar-chart-plot', radar_chart.data, radar_chart.layout);
+            
+            // Execution time chart plot
+            Plotly.newPlot('execution-time-chart-plot', execution_time_chart.data, execution_time_chart.layout);
+            
+            // Network graph plot
+            Plotly.newPlot('network-graph-plot', network_graph.data, network_graph.layout);
+            
+            // Temporal analysis plot
+            Plotly.newPlot('temporal-analysis-plot', temporal_analysis.data, temporal_analysis.layout);
+            
+            // Node membership plot
+            Plotly.newPlot('node-membership-plot', node_membership.data, node_membership.layout);
+            
+            // Attack concentration plot
+            Plotly.newPlot('attack-concentration-plot', attack_concentration.data, attack_concentration.layout);
+            
+            // Make plots responsive
+            window.onresize = function() {
+                Plotly.relayout('performance-metrics-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('heatmap-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('bubble-chart-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('community-bar-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('attack-type-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('method-attack-heatmap-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('feature-importance-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('radar-chart-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('execution-time-chart-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('network-graph-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('temporal-analysis-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('node-membership-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+                Plotly.relayout('attack-concentration-plot', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+            };
+        });
+        
+        // Activate Bootstrap tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // Handle navbar clicks
+        document.querySelectorAll('.navbar-nav .nav-link').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                document.querySelectorAll('.navbar-nav .nav-link').forEach(function(item) {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
